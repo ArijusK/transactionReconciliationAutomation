@@ -18,7 +18,7 @@ REQUIRED_COLUMNS = [
 def load_transactions(file_path):
     return pd.read_csv(file_path)
 
-def reconcile_transcations(internal_df, bank_df):
+def reconcile_transactions(internal_df, bank_df):
     return internal_df.merge(
         bank_df,
         on="transaction_id",
@@ -271,7 +271,7 @@ def main():
     internal_invalid_dates = find_invalid_dates(internal_df)
     bank_invalid_dates = find_invalid_dates(bank_df)
 
-    reconciled = reconcile_transcations(
+    reconciled = reconcile_transactions(
         internal_df,
         bank_df
     )
