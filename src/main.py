@@ -6,7 +6,6 @@ from src.exchange_rates import (
     get_exchange_rates,
     ExchangeRateError,
 )
-
 from src.loader import load_transactions
 from src.validator import (
     VALID_CURRENCIES,
@@ -72,14 +71,48 @@ def main():
     internal_df = normalize_currency(internal_df)
     bank_df = normalize_currency(bank_df)
 
+    # Find validation problems
+    internal_invalid_currencies = find_invalid_currencies(
+        internal_df
+    )
+
+    bank_invalid_currencies = find_invalid_currencies(
+        bank_df
+    )
+
+    internal_missing_ids, internal_duplicates = (
+        find_invalid_transactions(internal_df)
+    )
+
+    bank_missing_ids, bank_duplicates = (
+        find_invalid_transactions(bank_df)
+    )
+
+    internal_invalid_amounts = find_invalid_amounts(
+        internal_df
+    )
+
+    bank_invalid_amounts = find_invalid_amounts(
+        bank_df
+    )
+
+    internal_invalid_dates = find_invalid_dates(
+        internal_df
+    )
+
+    bank_invalid_dates = find_invalid_dates(
+        bank_df
+    )
+
+    # Only use valid currencies from valid rows
     used_currencies = set(
-    internal_df["currency"]
+        internal_df["currency"]
     ).union(
         set(bank_df["currency"])
     )
 
     valid_used_currencies = (
-    used_currencies & VALID_CURRENCIES
+        used_currencies & VALID_CURRENCIES
     )
 
     try:
@@ -90,11 +123,14 @@ def main():
             base_currency="EUR"
         )
 
-        fx_summary_df = pd.DataFrame(exchange_rates)
+        fx_summary_df = pd.DataFrame(
+            exchange_rates
+        )
 
     except ExchangeRateError as error:
         logging.warning(error)
         fx_summary_df = pd.DataFrame()
+
 
     logging.info("Reconciling transactions")
 
@@ -104,34 +140,12 @@ def main():
     )
 
     missing_from_bank, missing_from_internal = (
-            find_missing_transactions(reconciled)
+        find_missing_transactions(reconciled)
     )
     
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
     currency_mismatches = find_currency_mismatches(reconciled)
-
-    internal_invalid_currencies = find_invalid_currencies(
-    internal_df
-    )
-
-    bank_invalid_currencies = find_invalid_currencies(
-        bank_df
-    )
-    
-    internal_missing_ids, internal_duplicates = (
-        find_invalid_transactions(internal_df)
-    )
-
-    bank_missing_ids, bank_duplicates = (
-        find_invalid_transactions(bank_df)
-    )
-
-    internal_invalid_amounts = find_invalid_amounts(internal_df)
-    bank_invalid_amounts = find_invalid_amounts(bank_df)
-
-    internal_invalid_dates = find_invalid_dates(internal_df)
-    bank_invalid_dates = find_invalid_dates(bank_df) 
 
     summary_df = build_summary(
         internal_df,

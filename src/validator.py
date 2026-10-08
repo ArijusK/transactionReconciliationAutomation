@@ -65,3 +65,4 @@ def find_invalid_currencies(df):
     return df[
         ~df["currency"].isin(VALID_CURRENCIES)
     ]
+
