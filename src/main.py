@@ -3,6 +3,7 @@ import pandas as pd
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
+OUTPUT_DIR = BASE_DIR / "output"
 
 REQUIRED_COLUMNS = [
     "transaction_id",
@@ -100,6 +101,61 @@ def find_invalid_dates(df):
 
     return invalid_dates
 
+def print_summary(
+        internal_df,
+        bank_df,
+        missing_from_bank,
+        missing_from_internal,
+        amount_mismatches,
+        status_mismatches,
+        internal_duplicates,
+        bank_duplicates,
+        internal_invalid_amounts,
+        bank_invalid_amounts,
+        internal_invalid_dates,
+        bank_invalid_dates,       
+):
+    print("\nRECONCILATION SUMMARY")
+    print("----------------------")
+    print(f"Internal transactions: {len(internal_df)}")
+    print(f"Bank transactions: {len(bank_df)}")
+    print(f"Missing from bank: {len(missing_from_bank)}")
+    print(f"Missing from internal: {len(missing_from_internal)}")
+    print(f"Amount mismatches: {len(amount_mismatches)}")
+    print(f"Status mismatches: {len(status_mismatches)}")
+    print(f"Internal duplicates: {len(internal_duplicates)}")
+    print(f"Bank duplicates: {len(bank_duplicates)}")
+    print(f"Internal invalid amounts: {len(internal_invalid_amounts)}")
+    print(f"Bank invalid amounts: {len(bank_invalid_amounts)}")
+    print(f"Internal invalid dates: {len(internal_invalid_dates)}")
+    print(f"Bank invalid dates: {len(bank_invalid_dates)}")
+
+def export_results(
+        missing_from_bank,
+        missing_from_internal,
+        amount_mismatches,
+        status_mismatches
+):
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    missing_from_bank.to_csv(
+        OUTPUT_DIR / "missingFromBank.csv",
+        index=False
+    )
+
+    missing_from_internal.to_csv(
+        OUTPUT_DIR / "missingFromInternal.csv"
+    )
+
+    amount_mismatches.to_csv(
+        OUTPUT_DIR / "amountMismatches.csv",
+        index=False
+    )
+
+    status_mismatches.to_csv(
+        OUTPUT_DIR / "statusMismatches.csv",
+        index=False
+    )
 
 def main():
     internal_file = DATA_DIR / "internalTransactions.csv"
@@ -146,56 +202,26 @@ def main():
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
 
-    print("\nINTERNAL INVALID AMOUNTS")
-    print(internal_invalid_amounts)
-
-    print("\nBANK INVALID AMOUNTS")
-    print(bank_invalid_amounts)
-
-    print("\nINTERNAL INVALID DATES")
-    print(internal_invalid_dates)
-
-    print("\nBANK INVALID DATES")
-    print(bank_invalid_dates)
-
-    print("\nINTERNAL MISSING TRANSACTION IDS")
-    print(internal_missing_ids)
-
-    print("\nINTERNAL DUPLICATE TRANSACTION IDS")
-    print(internal_duplicates)
-
-    print("\nBANK MISSING TRANSACTION IDS")
-    print(bank_missing_ids)
-
-    print("\nBANK DUPLICATE TRANSACTION IDS")
-    print(bank_duplicates)
-
-    print("\nMISSING FROM BANK")
-    print(missing_from_bank)
-
-    print("\nMISSING FROM INTERNAL")
-    print(missing_from_internal)
-
-    print("\nAMOUNT MISMATCHES")
-    print(
-        amount_mismatches[
-            [
-                "transaction_id",
-                "amount_internal",
-                "amount_bank",
-            ]
-        ]
+    print_summary(
+        internal_df,
+        bank_df,
+        missing_from_bank,
+        missing_from_internal,
+        amount_mismatches,
+        status_mismatches,
+        internal_duplicates,
+        bank_duplicates,
+        internal_invalid_amounts,
+        bank_invalid_amounts,
+        internal_invalid_dates,
+        bank_invalid_dates
     )
 
-    print("\nSTATUS MISMATCHES")
-    print(
-        status_mismatches[
-            [
-                "transaction_id",
-                "status_internal",
-                "status_bank",
-            ]
-        ]
+    export_results(
+        missing_from_bank,
+        missing_from_internal,
+        amount_mismatches,
+        status_mismatches
     )
 
 
