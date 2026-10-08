@@ -130,7 +130,37 @@ def print_summary(
     print(f"Internal invalid dates: {len(internal_invalid_dates)}")
     print(f"Bank invalid dates: {len(bank_invalid_dates)}")
 
+def build_summary(
+        internal_df,
+        bank_df,
+        missing_from_bank,
+        missing_from_internal,
+        amount_mismatches,
+        status_mismatches
+):
+    summary_data = {
+        "Metric": [
+            "Internal transactions",
+            "Bank transactions",
+            "Missing from bank",
+            "Missing from internal",
+            "Amount mismatches",
+            "Status mismatches"
+        ],
+        "Count": [
+            len(internal_df),
+            len(bank_df),
+            len(missing_from_bank),
+            len(missing_from_internal),
+            len(amount_mismatches),
+            len(status_mismatches)
+        ]
+    }
+
+    return pd.DataFrame(summary_data)
+
 def export_results(
+        summary_df,
         missing_from_bank,
         missing_from_internal,
         amount_mismatches,
@@ -141,6 +171,12 @@ def export_results(
     report_path = OUTPUT_DIR / "reconcilationReport.xlsx"
 
     with pd.ExcelWriter(report_path, engine="openpyxl") as writer:
+        summary_df.to_excel(
+            writer,
+            sheet_name="Summary",
+            index=False
+        )
+
         missing_from_bank.to_excel(
             writer,
             sheet_name="Missing From Bank",
@@ -225,6 +261,15 @@ def main():
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
 
+    summary_df = build_summary(
+        internal_df,
+        bank_df,
+        missing_from_bank,
+        missing_from_internal,
+        amount_mismatches,
+        status_mismatches
+    )
+
     print_summary(
         internal_df,
         bank_df,
@@ -241,6 +286,7 @@ def main():
     )
 
     export_results(
+        summary_df,
         missing_from_bank,
         missing_from_internal,
         amount_mismatches,
