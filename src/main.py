@@ -65,6 +65,17 @@ def validate_columns(df, required_columns, file_name):
             f"{file_name} is missing required columns: {missing_columns}"
         )
     
+def find_invalid_transactions(df):
+    missing_ids = df[
+        df["transaction_id"].isna()
+    ]
+
+    duplicate_ids = df[
+        df["transaction_id"].duplicated(keep=False)
+    ]
+
+    return missing_ids, duplicate_ids
+
 
 def main():
     internal_file = DATA_DIR / "internalTransactions.csv"
@@ -85,6 +96,14 @@ def main():
         "bankTransactions.csv"
     )
 
+    internal_missing_ids, internal_duplicates = (
+        find_invalid_transactions(internal_df)
+    )
+
+    bank_missing_ids, bank_duplicates = (
+        find_invalid_transactions(bank_df)
+    )
+
     reconciled = reconcile_transcations(
         internal_df,
         bank_df
@@ -96,6 +115,18 @@ def main():
 
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
+
+    print("\nINTERNAL MISSING TRANSACTION IDS")
+    print(internal_missing_ids)
+
+    print("\nINTERNAL DUPLICATE TRANSACTION IDS")
+    print(internal_duplicates)
+
+    print("\nBANK MISSING TRANSACTION IDS")
+    print(bank_missing_ids)
+
+    print("\nBANK DUPLICATE TRANSACTION IDS")
+    print(bank_duplicates)
 
     print("\nMISSING FROM BANK")
     print(missing_from_bank)
