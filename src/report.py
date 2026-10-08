@@ -8,12 +8,22 @@ OUTPUT_DIR = BASE_DIR / "output"
 
 
 def build_summary(
-        internal_df,
-        bank_df,
-        missing_from_bank,
-        missing_from_internal,
-        amount_mismatches,
-        status_mismatches
+    internal_df,
+    bank_df,
+    missing_from_bank,
+    missing_from_internal,
+    amount_mismatches,
+    status_mismatches,
+    internal_missing_ids,
+    bank_missing_ids,
+    internal_duplicates,
+    bank_duplicates,
+    internal_invalid_amounts,
+    bank_invalid_amounts,
+    internal_invalid_dates,
+    bank_invalid_dates,
+    internal_invalid_currencies,
+    bank_invalid_currencies,
 ):
     summary_data = {
         "Metric": [
@@ -22,7 +32,17 @@ def build_summary(
             "Missing from bank",
             "Missing from internal",
             "Amount mismatches",
-            "Status mismatches"
+            "Status mismatches",
+            "Internal missing IDs",
+            "Bank missing IDs",
+            "Internal duplicates",
+            "Bank duplicates",
+            "Internal invalid amounts",
+            "Bank invalid amounts",
+            "Internal invalid dates",
+            "Bank invalid dates",
+            "Internal invalid currencies",
+            "Bank invalid currencies",
         ],
         "Count": [
             len(internal_df),
@@ -30,8 +50,18 @@ def build_summary(
             len(missing_from_bank),
             len(missing_from_internal),
             len(amount_mismatches),
-            len(status_mismatches)
-        ]
+            len(status_mismatches),
+            len(internal_missing_ids),
+            len(bank_missing_ids),
+            len(internal_duplicates),
+            len(bank_duplicates),
+            len(internal_invalid_amounts),
+            len(bank_invalid_amounts),
+            len(internal_invalid_dates),
+            len(bank_invalid_dates),
+            len(internal_invalid_currencies),
+            len(bank_invalid_currencies),
+        ],
     }
 
     return pd.DataFrame(summary_data)
@@ -56,11 +86,21 @@ def format_worksheet(worksheet):
         worksheet.column_dimensions[column_letter].width = max_length + 2
 
 def export_results(
-        summary_df,
-        missing_from_bank,
-        missing_from_internal,
-        amount_mismatches,
-        status_mismatches
+    summary_df,
+    missing_from_bank,
+    missing_from_internal,
+    amount_mismatches,
+    status_mismatches,
+    internal_missing_ids,
+    bank_missing_ids,
+    internal_duplicates,
+    bank_duplicates,
+    internal_invalid_amounts,
+    bank_invalid_amounts,
+    internal_invalid_dates,
+    bank_invalid_dates,
+    internal_invalid_currencies,
+    bank_invalid_currencies,
 ):
     OUTPUT_DIR.mkdir(exist_ok=True)
 
@@ -78,30 +118,30 @@ def export_results(
             sheet_name="Missing From Bank",
             index=False
         )
-        
+
         missing_from_internal.to_excel(
             writer,
             sheet_name="Missing From Internal",
             index=False
         )
-    
+
         amount_mismatches[
             [
                 "transaction_id",
                 "amount_internal",
-                "amount_bank"
+                "amount_bank",
             ]
         ].to_excel(
             writer,
-            sheet_name="Amount Miscmatches",
+            sheet_name="Amount Mismatches",
             index=False
         )
-    
+
         status_mismatches[
             [
                 "transaction_id",
                 "status_internal",
-                "status_bank"
+                "status_bank",
             ]
         ].to_excel(
             writer,
@@ -109,24 +149,88 @@ def export_results(
             index=False
         )
 
+        internal_missing_ids.to_excel(
+            writer,
+            sheet_name="Internal Missing IDs",
+            index=False
+        )
+
+        bank_missing_ids.to_excel(
+            writer,
+            sheet_name="Bank Missing IDs",
+            index=False
+        )
+
+        internal_duplicates.to_excel(
+            writer,
+            sheet_name="Internal Duplicates",
+            index=False
+        )
+
+        bank_duplicates.to_excel(
+            writer,
+            sheet_name="Bank Duplicates",
+            index=False
+        )
+
+        internal_invalid_amounts.to_excel(
+            writer,
+            sheet_name="Internal Invalid Amounts",
+            index=False
+        )
+
+        bank_invalid_amounts.to_excel(
+            writer,
+            sheet_name="Bank Invalid Amounts",
+            index=False
+        )
+
+        internal_invalid_dates.to_excel(
+            writer,
+            sheet_name="Internal Invalid Dates",
+            index=False
+        )
+
+        bank_invalid_dates.to_excel(
+            writer,
+            sheet_name="Bank Invalid Dates",
+            index=False
+        )
+
+        internal_invalid_currencies.to_excel(
+            writer,
+            sheet_name="Internal Bad Currency",
+            index=False
+        )
+
+        bank_invalid_currencies.to_excel(
+            writer,
+            sheet_name="Bank Bad Currency",
+            index=False
+        )
+
         for worksheet in writer.book.worksheets:
             format_worksheet(worksheet)
 
 def print_summary(
-        internal_df,
-        bank_df,
-        missing_from_bank,
-        missing_from_internal,
-        amount_mismatches,
-        status_mismatches,
-        internal_duplicates,
-        bank_duplicates,
-        internal_invalid_amounts,
-        bank_invalid_amounts,
-        internal_invalid_dates,
-        bank_invalid_dates,       
+    internal_df,
+    bank_df,
+    missing_from_bank,
+    missing_from_internal,
+    amount_mismatches,
+    status_mismatches,
+    internal_missing_ids,
+    bank_missing_ids,
+    internal_duplicates,
+    bank_duplicates,
+    internal_invalid_amounts,
+    bank_invalid_amounts,
+    internal_invalid_dates,
+    bank_invalid_dates,
+    internal_invalid_currencies,
+    bank_invalid_currencies,
 ):
-    print("\nRECONCILATION SUMMARY")
+    print("\nRECONCILIATION SUMMARY")
     print("----------------------")
     print(f"Internal transactions: {len(internal_df)}")
     print(f"Bank transactions: {len(bank_df)}")
@@ -134,9 +238,19 @@ def print_summary(
     print(f"Missing from internal: {len(missing_from_internal)}")
     print(f"Amount mismatches: {len(amount_mismatches)}")
     print(f"Status mismatches: {len(status_mismatches)}")
+    print(f"Internal missing IDs: {len(internal_missing_ids)}")
+    print(f"Bank missing IDs: {len(bank_missing_ids)}")
     print(f"Internal duplicates: {len(internal_duplicates)}")
     print(f"Bank duplicates: {len(bank_duplicates)}")
     print(f"Internal invalid amounts: {len(internal_invalid_amounts)}")
     print(f"Bank invalid amounts: {len(bank_invalid_amounts)}")
     print(f"Internal invalid dates: {len(internal_invalid_dates)}")
     print(f"Bank invalid dates: {len(bank_invalid_dates)}")
+    print(
+        f"Internal invalid currencies: "
+        f"{len(internal_invalid_currencies)}"
+    )
+    print(
+        f"Bank invalid currencies: "
+        f"{len(bank_invalid_currencies)}"
+    )

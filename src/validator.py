@@ -1,5 +1,11 @@
 import pandas as pd
 
+VALID_CURRENCIES = {
+    "EUR",
+    "USD",
+    "GBP",
+}
+
 def validate_columns(df, required_columns, file_name):
     missing_columns = [
         column
@@ -43,3 +49,19 @@ def find_invalid_dates(df):
         parsed_dates.isna()
     ]
 
+def normalize_currency(df):
+    df = df.copy()
+
+    df["currency"] = (
+        df["currency"]
+        .astype(str)
+        .str.strip()
+        .str.upper()
+    )
+
+    return df
+
+def find_invalid_currencies(df):
+    return df[
+        ~df["currency"].isin(VALID_CURRENCIES)
+    ]

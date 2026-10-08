@@ -13,6 +13,8 @@ from src.validator import (
     find_invalid_transactions,
     find_invalid_amounts,
     find_invalid_dates,
+    normalize_currency,
+    find_invalid_currencies,
 )
 
 
@@ -180,3 +182,25 @@ def test_invalid_date():
 
     assert len(invalid_dates) == 1
 
+def test_currency_normalization():
+    df = pd.DataFrame({
+        "currency": [" eur ", "usd", "GBP"],
+    })
+
+    result = normalize_currency(df)
+
+    assert result["currency"].tolist() == [
+        "EUR",
+        "USD",
+        "GBP",
+    ]
+
+def test_invalid_currency():
+    df = pd.DataFrame({
+        "currency": ["EUR", "XYZ"],
+    })
+
+    invalid = find_invalid_currencies(df)
+
+    assert len(invalid) == 1
+    assert invalid.iloc[0]["currency"] == "XYZ"

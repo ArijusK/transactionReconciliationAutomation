@@ -7,6 +7,8 @@ from src.validator import (
     find_invalid_transactions,
     find_invalid_amounts,
     find_invalid_dates,
+    normalize_currency,
+    find_invalid_currencies
 )
 from src.reconciler import (
     reconcile_transactions,
@@ -59,6 +61,9 @@ def main():
         "bankTransactions.csv"
     )
 
+    internal_df = normalize_currency(internal_df)
+    bank_df = normalize_currency(bank_df)
+
     logging.info("Reconciling transactions")
 
     reconciled = reconcile_transactions(
@@ -73,7 +78,14 @@ def main():
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
 
+    internal_invalid_currencies = find_invalid_currencies(
+    internal_df
+    )
 
+    bank_invalid_currencies = find_invalid_currencies(
+        bank_df
+    )
+    
     internal_missing_ids, internal_duplicates = (
         find_invalid_transactions(internal_df)
     )
@@ -94,8 +106,18 @@ def main():
         missing_from_bank,
         missing_from_internal,
         amount_mismatches,
-        status_mismatches
-    )
+        status_mismatches,
+        internal_missing_ids,
+        bank_missing_ids,
+        internal_duplicates,
+        bank_duplicates,
+        internal_invalid_amounts,
+        bank_invalid_amounts,
+        internal_invalid_dates,
+        bank_invalid_dates,
+        internal_invalid_currencies,
+        bank_invalid_currencies,
+    )   
 
     print_summary(
         internal_df,
@@ -104,12 +126,16 @@ def main():
         missing_from_internal,
         amount_mismatches,
         status_mismatches,
+        internal_missing_ids,
+        bank_missing_ids,
         internal_duplicates,
         bank_duplicates,
         internal_invalid_amounts,
         bank_invalid_amounts,
         internal_invalid_dates,
-        bank_invalid_dates
+        bank_invalid_dates,
+        internal_invalid_currencies,
+        bank_invalid_currencies,
     )
 
     export_results(
@@ -117,7 +143,17 @@ def main():
         missing_from_bank,
         missing_from_internal,
         amount_mismatches,
-        status_mismatches
+        status_mismatches,
+        internal_missing_ids,
+        bank_missing_ids,
+        internal_duplicates,
+        bank_duplicates,
+        internal_invalid_amounts,
+        bank_invalid_amounts,
+        internal_invalid_dates,
+        bank_invalid_dates,
+        internal_invalid_currencies,
+        bank_invalid_currencies,
     )
 
     logging.info("Reconciliation report generated successfully")
