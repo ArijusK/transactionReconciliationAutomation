@@ -125,6 +125,10 @@ TransactionReconciliationAutomation/
 │
 ├── output/
 │
+├── docs/
+│   ├── processFlow.md
+│   └── solutionDesign.md
+│
 ├── .gitignore
 ├── README.md
 └── requirements.txt
