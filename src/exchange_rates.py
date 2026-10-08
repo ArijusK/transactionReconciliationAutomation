@@ -34,7 +34,7 @@ def get_exchange_rate(base_currency, quote_currency):
     except requests.RequestException as error:
         raise ExchangeRateError(
             f"Failed to fetch {base_currency}/{quote_currency} rate"
-        )
+        ) from error
 
 def get_exchange_rates(currencies, base_currency="EUR"):
     rates = []

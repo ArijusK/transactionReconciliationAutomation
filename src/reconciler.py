@@ -35,3 +35,12 @@ def find_status_mismatches(reconciled):
     return both[
         both["status_internal"] != both["status_bank"]
     ]
+
+def find_currency_mismatches(reconciled):
+    both = reconciled[
+        reconciled["_merge"] == "both"
+    ].copy()
+
+    return both[
+        both["currency_internal"] != both["currency_bank"]
+    ]

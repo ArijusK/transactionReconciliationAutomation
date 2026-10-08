@@ -14,6 +14,7 @@ def build_summary(
     missing_from_internal,
     amount_mismatches,
     status_mismatches,
+    currency_mismatches,
     internal_missing_ids,
     bank_missing_ids,
     internal_duplicates,
@@ -33,6 +34,7 @@ def build_summary(
             "Missing from internal",
             "Amount mismatches",
             "Status mismatches",
+            "Currency mismatches",
             "Internal missing IDs",
             "Bank missing IDs",
             "Internal duplicates",
@@ -51,6 +53,7 @@ def build_summary(
             len(missing_from_internal),
             len(amount_mismatches),
             len(status_mismatches),
+            len(currency_mismatches),
             len(internal_missing_ids),
             len(bank_missing_ids),
             len(internal_duplicates),
@@ -92,6 +95,7 @@ def export_results(
     missing_from_internal,
     amount_mismatches,
     status_mismatches,
+    currency_mismatches,
     internal_missing_ids,
     bank_missing_ids,
     internal_duplicates,
@@ -153,6 +157,18 @@ def export_results(
         ].to_excel(
             writer,
             sheet_name="Status Mismatches",
+            index=False
+        )
+
+        currency_mismatches[
+            [
+                "transaction_id",
+                "currency_internal",
+                "currency_bank",
+            ]
+        ].to_excel(
+            writer,
+            sheet_name="Currency Mismatches",
             index=False
         )
 
@@ -226,6 +242,7 @@ def print_summary(
     missing_from_internal,
     amount_mismatches,
     status_mismatches,
+    currency_mismatches,
     internal_missing_ids,
     bank_missing_ids,
     internal_duplicates,
@@ -245,6 +262,7 @@ def print_summary(
     print(f"Missing from internal: {len(missing_from_internal)}")
     print(f"Amount mismatches: {len(amount_mismatches)}")
     print(f"Status mismatches: {len(status_mismatches)}")
+    print(f"Currency mismatches: {len(currency_mismatches)}")
     print(f"Internal missing IDs: {len(internal_missing_ids)}")
     print(f"Bank missing IDs: {len(bank_missing_ids)}")
     print(f"Internal duplicates: {len(internal_duplicates)}")

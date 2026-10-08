@@ -22,6 +22,7 @@ from src.reconciler import (
     find_missing_transactions,
     find_amount_mismatches,
     find_status_mismatches,
+    find_currency_mismatches,
 )
 from src.report import (
     build_summary,
@@ -108,6 +109,7 @@ def main():
     
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
+    currency_mismatches = find_currency_mismatches(reconciled)
 
     internal_invalid_currencies = find_invalid_currencies(
     internal_df
@@ -138,6 +140,7 @@ def main():
         missing_from_internal,
         amount_mismatches,
         status_mismatches,
+        currency_mismatches,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -157,6 +160,7 @@ def main():
         missing_from_internal,
         amount_mismatches,
         status_mismatches,
+        currency_mismatches,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -176,6 +180,7 @@ def main():
         missing_from_internal,
         amount_mismatches,
         status_mismatches,
+        currency_mismatches,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,

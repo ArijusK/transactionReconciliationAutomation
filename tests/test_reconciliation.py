@@ -6,6 +6,7 @@ from src.reconciler import (
     find_missing_transactions,
     find_amount_mismatches,
     find_status_mismatches,
+    find_currency_mismatches,
 )
 
 from src.validator import (
@@ -56,6 +57,20 @@ def test_missing_transactions():
         missing_from_internal.iloc[0]["transaction_id"]
         == "TX003"
     )
+
+def test_missing_transaction_id():
+    df = pd.DataFrame({
+        "transaction_id": ["TX001", None],
+        "date": ["2026-10-01", "2026-10-02"],
+        "currency": ["EUR", "EUR"],
+        "amount": [100.0, 200.0],
+        "status": ["SETTLED", "SETTLED"],
+    })
+
+    missing_ids, duplicate_ids = find_invalid_transactions(df)
+
+    assert len(missing_ids) == 1
+    assert len(duplicate_ids) == 0
 
 def test_amount_mismatch():
     internal_df = pd.DataFrame({
@@ -204,3 +219,35 @@ def test_invalid_currency():
 
     assert len(invalid) == 1
     assert invalid.iloc[0]["currency"] == "XYZ"
+
+def test_currency_mismatch():
+    internal_df = pd.DataFrame({
+        "transaction_id": ["TX001"],
+        "date": ["2026-10-01"],
+        "currency": ["EUR"],
+        "amount": [100.0],
+        "status": ["SETTLED"],
+    })
+
+    bank_df = pd.DataFrame({
+        "transaction_id": ["TX001"],
+        "date": ["2026-10-01"],
+        "currency": ["USD"],
+        "amount": [100.0],
+        "status": ["SETTLED"],
+    })
+
+    reconciled = reconcile_transactions(
+        internal_df,
+        bank_df
+    )
+
+    currency_mismatches = find_currency_mismatches(
+        reconciled
+    )
+
+    assert len(currency_mismatches) == 1
+    assert (
+        currency_mismatches.iloc[0]["transaction_id"]
+        == "TX001"
+    )
