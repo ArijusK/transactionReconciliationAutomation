@@ -13,12 +13,15 @@
 ## Future State (TO-BE)
 
 1. Internal and bank transaction files are provided to the Python automation.
-2. Input files are validated.
-3. Transactions are matched automatically using transaction IDs.
-4. Missing transactions and mismatches are identified.
-5. A reconciliation summary is generated.
-6. An Excel report is created automatically.
-7. Analyst reviews only the exceptions.
+2. Required columns are validated.
+3. Currency values are normalized.
+4. Data-quality issues such as missing IDs, duplicates, invalid amounts, invalid dates, and invalid currencies are identified.
+5. Relevant exchange rates are retrieved from an external API when available.
+6. Transactions are matched automatically using transaction IDs.
+7. Missing transactions and amount, status, and currency mismatches are identified.
+8. A reconciliation summary is generated.
+9. An Excel report is created automatically.
+10. The analyst reviews the generated exceptions and validation results.
 
 ## Expected Benefits
 

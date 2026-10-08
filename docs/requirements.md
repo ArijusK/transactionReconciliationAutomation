@@ -43,7 +43,17 @@ As an operations analyst, I want status differences to be identified so that inc
 - A transaction is flagged when the statuses differ.
 - The report shows both status values.
 
-### Story 4: Validate input data
+### Story 4: Detect currency mismatches
+
+As an operations analyst, I want currency differences to be identified so that transactions with inconsistent currencies can be investigated.
+
+#### Acceptance Criteria
+
+- Internal and bank currencies are compared for matching transaction IDs.
+- A transaction is flagged when the currencies differ.
+- The report shows the transaction ID and both currency values.
+
+### Story 5: Validate input data
 
 As an automation user, I want invalid input data to be detected before reconciliation so that unreliable data does not silently produce incorrect results.
 
@@ -54,10 +64,12 @@ As an automation user, I want invalid input data to be detected before reconcili
 - Duplicate transaction IDs are detected.
 - Invalid amounts are detected.
 - Invalid dates are detected.
+- Currency values are normalized before comparison.
+- Unsupported currencies are identified.
 
-### Story 5: Generate a reconciliation report
+### Story 6: Generate a reconciliation report
 
-As an operations analyst, I want reconciliation results exported into an Excel workbook so that I can review and share the results easily.
+As an operations analyst, I want reconciliation results exported into an Excel report so that I can review and share the results easily.
 
 #### Acceptance Criteria
 
@@ -65,7 +77,20 @@ As an operations analyst, I want reconciliation results exported into an Excel w
 - Missing transactions are shown in separate sheets.
 - Amount mismatches are shown in a dedicated sheet.
 - Status mismatches are shown in a dedicated sheet.
-- The workbook is saved in the `output` directory.
+- The Excel report is saved in the `output` directory.
+- Currency mismatches are shown in a dedicated sheet.
+
+### Story 7: Retrieve exchange-rate information
+
+As an operations analyst, I want relevant exchange rates included in the report so that I can view FX information alongside reconciliation results.
+
+#### Acceptance Criteria
+
+- Exchange rates are retrieved only for supported currencies used in the input data.
+- EUR is used as the base currency.
+- Exchange-rate results are included in an FX Rates worksheet.
+- If the exchange-rate API is unavailable, the reconciliation still completes.
+- A warning is logged when FX data cannot be retrieved.
 
 ## Definition of Done
 
