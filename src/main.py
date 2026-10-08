@@ -76,6 +76,30 @@ def find_invalid_transactions(df):
 
     return missing_ids, duplicate_ids
 
+def find_invalid_amounts(df):
+    numeric_amounts = pd.to_numeric(
+        df["amount"],
+        errors="coerce"
+    )
+
+    invalid_amounts = df[
+        numeric_amounts.isna()
+    ]
+
+    return invalid_amounts
+
+def find_invalid_dates(df):
+    parsed_dates = pd.to_datetime(
+        df["date"],
+        errors="coerce"
+    )
+
+    invalid_dates = df[
+        parsed_dates.isna()
+    ]
+
+    return invalid_dates
+
 
 def main():
     internal_file = DATA_DIR / "internalTransactions.csv"
@@ -104,6 +128,12 @@ def main():
         find_invalid_transactions(bank_df)
     )
 
+    internal_invalid_amounts = find_invalid_amounts(internal_df)
+    bank_invalid_amounts = find_invalid_amounts(bank_df)
+
+    internal_invalid_dates = find_invalid_dates(internal_df)
+    bank_invalid_dates = find_invalid_dates(bank_df)
+
     reconciled = reconcile_transcations(
         internal_df,
         bank_df
@@ -115,6 +145,18 @@ def main():
 
     amount_mismatches = find_amount_mismatches(reconciled)
     status_mismatches = find_status_mismatches(reconciled)
+
+    print("\nINTERNAL INVALID AMOUNTS")
+    print(internal_invalid_amounts)
+
+    print("\nBANK INVALID AMOUNTS")
+    print(bank_invalid_amounts)
+
+    print("\nINTERNAL INVALID DATES")
+    print(internal_invalid_dates)
+
+    print("\nBANK INVALID DATES")
+    print(bank_invalid_dates)
 
     print("\nINTERNAL MISSING TRANSACTION IDS")
     print(internal_missing_ids)
