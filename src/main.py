@@ -1,8 +1,15 @@
 from pathlib import Path
 import logging
+import pandas as pd
+
+from src.exchange_rates import (
+    get_exchange_rates,
+    ExchangeRateError,
+)
 
 from src.loader import load_transactions
 from src.validator import (
+    VALID_CURRENCIES,
     validate_columns,
     find_invalid_transactions,
     find_invalid_amounts,
@@ -63,6 +70,30 @@ def main():
 
     internal_df = normalize_currency(internal_df)
     bank_df = normalize_currency(bank_df)
+
+    used_currencies = set(
+    internal_df["currency"]
+    ).union(
+        set(bank_df["currency"])
+    )
+
+    valid_used_currencies = (
+    used_currencies & VALID_CURRENCIES
+    )
+
+    try:
+        logging.info("Fetching exchange rates")
+
+        exchange_rates = get_exchange_rates(
+            valid_used_currencies,
+            base_currency="EUR"
+        )
+
+        fx_summary_df = pd.DataFrame(exchange_rates)
+
+    except ExchangeRateError as error:
+        logging.warning(error)
+        fx_summary_df = pd.DataFrame()
 
     logging.info("Reconciling transactions")
 
@@ -140,6 +171,7 @@ def main():
 
     export_results(
         summary_df,
+        fx_summary_df,
         missing_from_bank,
         missing_from_internal,
         amount_mismatches,

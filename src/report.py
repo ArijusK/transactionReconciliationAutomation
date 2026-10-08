@@ -87,6 +87,7 @@ def format_worksheet(worksheet):
 
 def export_results(
     summary_df,
+    fx_summary_df,
     missing_from_bank,
     missing_from_internal,
     amount_mismatches,
@@ -110,6 +111,12 @@ def export_results(
         summary_df.to_excel(
             writer,
             sheet_name="Summary",
+            index=False
+        )
+
+        fx_summary_df.to_excel(
+            writer,
+            sheet_name="FX Rates",
             index=False
         )
 
