@@ -1,5 +1,7 @@
 from pathlib import Path
+from openpyxl.styles import Font
 import pandas as pd
+
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
@@ -159,6 +161,25 @@ def build_summary(
 
     return pd.DataFrame(summary_data)
 
+def format_worksheet(worksheet):
+    for cell in worksheet[1]:
+        cell.font = Font(bold=True)
+
+    worksheet.freeze_panes = "A2"
+
+    for column_cells in worksheet.columns:
+        max_length = 0
+
+        for cell in column_cells:
+            if cell.value is not None:
+                max_length = max(
+                    max_length,
+                    len(str(cell.value))
+                )
+
+        column_letter = column_cells[0].column_letter
+        worksheet.column_dimensions[column_letter].width = max_length + 2
+
 def export_results(
         summary_df,
         missing_from_bank,
@@ -168,7 +189,7 @@ def export_results(
 ):
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    report_path = OUTPUT_DIR / "reconcilationReport.xlsx"
+    report_path = OUTPUT_DIR / "reconciliationReport.xlsx"
 
     with pd.ExcelWriter(report_path, engine="openpyxl") as writer:
         summary_df.to_excel(
@@ -213,7 +234,8 @@ def export_results(
             index=False
         )
 
-
+        for worksheet in writer.book.worksheets:
+            format_worksheet(worksheet)
     
 
 def main():
