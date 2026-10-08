@@ -1,4 +1,5 @@
 from pathlib import Path
+import logging
 
 from src.loader import load_transactions
 from src.validator import (
@@ -30,13 +31,21 @@ REQUIRED_COLUMNS = [
     "status"
 ]
 
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(levelname)s: %(message)s"
+)
 
 def main():
     internal_file = DATA_DIR / "internalTransactions.csv"
     bank_file = DATA_DIR / "bankTransactions.csv"
 
+    logging.info("Loading transaction files")
+
     internal_df = load_transactions(internal_file)
     bank_df = load_transactions(bank_file)
+
+    logging.info("Validating input data")
 
     validate_columns(
         internal_df,
@@ -49,6 +58,8 @@ def main():
         REQUIRED_COLUMNS,
         "bankTransactions.csv"
     )
+
+    logging.info("Reconciling transactions")
 
     reconciled = reconcile_transactions(
         internal_df,
@@ -109,8 +120,14 @@ def main():
         status_mismatches
     )
 
+    logging.info("Reconciliation report generated successfully")
+
 
 if __name__ == "__main__":
-    main()
+    try:
+        main()
+
+    except Exception as error:
+        logging.error(error)
 
 

@@ -1,11 +1,14 @@
 import pandas as pd
 import pytest
 
-from src.main import (
+from src.reconciler import (
     reconcile_transactions,
     find_missing_transactions,
     find_amount_mismatches,
     find_status_mismatches,
+)
+
+from src.validator import (
     validate_columns,
     find_invalid_transactions,
     find_invalid_amounts,
@@ -176,3 +179,4 @@ def test_invalid_date():
     invalid_dates = find_invalid_dates(df)
 
     assert len(invalid_dates) == 1
+
