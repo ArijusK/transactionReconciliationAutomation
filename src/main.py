@@ -4,6 +4,14 @@ import pandas as pd
 BASE_DIR = Path(__file__).resolve().parent.parent
 DATA_DIR = BASE_DIR / "data"
 
+REQUIRED_COLUMNS = [
+    "transaction_id",
+    "date",
+    "currency",
+    "amount",
+    "status"
+]
+
 def load_transactions(file_path):
     return pd.read_csv(file_path)
 
@@ -45,12 +53,37 @@ def find_status_mismatches(reconciled):
         both["status_internal"] != both["status_bank"]
     ]
 
+def validate_columns(df, required_columns, file_name):
+    missing_columns = [
+        column
+        for column in required_columns
+        if column not in df.columns
+    ]
+
+    if missing_columns:
+        raise ValueError(
+            f"{file_name} is missing required columns: {missing_columns}"
+        )
+    
+
 def main():
     internal_file = DATA_DIR / "internalTransactions.csv"
     bank_file = DATA_DIR / "bankTransactions.csv"
 
     internal_df = load_transactions(internal_file)
     bank_df = load_transactions(bank_file)
+
+    validate_columns(
+        internal_df,
+        REQUIRED_COLUMNS,
+        "internalTransactions.csv"
+    )
+
+    validate_columns(
+        bank_df,
+        REQUIRED_COLUMNS,
+        "bankTransactions.csv"
+    )
 
     reconciled = reconcile_transcations(
         internal_df,
