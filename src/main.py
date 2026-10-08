@@ -138,24 +138,47 @@ def export_results(
 ):
     OUTPUT_DIR.mkdir(exist_ok=True)
 
-    missing_from_bank.to_csv(
-        OUTPUT_DIR / "missingFromBank.csv",
-        index=False
-    )
+    report_path = OUTPUT_DIR / "reconcilationReport.xlsx"
 
-    missing_from_internal.to_csv(
-        OUTPUT_DIR / "missingFromInternal.csv"
-    )
+    with pd.ExcelWriter(report_path, engine="openpyxl") as writer:
+        missing_from_bank.to_excel(
+            writer,
+            sheet_name="Missing From Bank",
+            index=False
+        )
+        
+        missing_from_internal.to_excel(
+            writer,
+            sheet_name="Missing From Internal",
+            index=False
+        )
+    
+        amount_mismatches[
+            [
+                "transaction_id",
+                "amount_internal",
+                "amount_bank"
+            ]
+        ].to_excel(
+            writer,
+            sheet_name="Amount Miscmatches",
+            index=False
+        )
+    
+        status_mismatches[
+            [
+                "transaction_id",
+                "status_internal",
+                "status_bank"
+            ]
+        ].to_excel(
+            writer,
+            sheet_name="Status Mismatches",
+            index=False
+        )
 
-    amount_mismatches.to_csv(
-        OUTPUT_DIR / "amountMismatches.csv",
-        index=False
-    )
 
-    status_mismatches.to_csv(
-        OUTPUT_DIR / "statusMismatches.csv",
-        index=False
-    )
+    
 
 def main():
     internal_file = DATA_DIR / "internalTransactions.csv"
