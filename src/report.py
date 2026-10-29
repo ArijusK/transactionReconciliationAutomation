@@ -15,6 +15,7 @@ def build_summary(
     amount_mismatches,
     status_mismatches,
     currency_mismatches,
+    excluded_from_matching,
     internal_missing_ids,
     bank_missing_ids,
     internal_duplicates,
@@ -35,6 +36,7 @@ def build_summary(
             "Amount mismatches",
             "Status mismatches",
             "Currency mismatches",
+            "Excluded from matching",
             "Internal missing IDs",
             "Bank missing IDs",
             "Internal duplicates",
@@ -54,6 +56,7 @@ def build_summary(
             len(amount_mismatches),
             len(status_mismatches),
             len(currency_mismatches),
+            len(excluded_from_matching),
             len(internal_missing_ids),
             len(bank_missing_ids),
             len(internal_duplicates),
@@ -96,6 +99,7 @@ def export_results(
     amount_mismatches,
     status_mismatches,
     currency_mismatches,
+    excluded_from_matching,
     internal_missing_ids,
     bank_missing_ids,
     internal_duplicates,
@@ -172,6 +176,12 @@ def export_results(
             index=False
         )
 
+        excluded_from_matching.to_excel(
+            writer,
+            sheet_name="Excluded From Matching",
+            index=False
+        )
+
         internal_missing_ids.to_excel(
             writer,
             sheet_name="Internal Missing IDs",
@@ -243,6 +253,7 @@ def print_summary(
     amount_mismatches,
     status_mismatches,
     currency_mismatches,
+    excluded_from_matching,
     internal_missing_ids,
     bank_missing_ids,
     internal_duplicates,
@@ -263,6 +274,7 @@ def print_summary(
     print(f"Amount mismatches: {len(amount_mismatches)}")
     print(f"Status mismatches: {len(status_mismatches)}")
     print(f"Currency mismatches: {len(currency_mismatches)}")
+    print(f"Excluded from matching: {len(excluded_from_matching)}")
     print(f"Internal missing IDs: {len(internal_missing_ids)}")
     print(f"Bank missing IDs: {len(bank_missing_ids)}")
     print(f"Internal duplicates: {len(internal_duplicates)}")

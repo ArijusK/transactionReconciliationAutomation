@@ -22,6 +22,7 @@ from src.reconciler import (
     find_amount_mismatches,
     find_status_mismatches,
     find_currency_mismatches,
+    split_unmatchable,
 )
 from src.report import (
     build_summary,
@@ -134,6 +135,11 @@ def main():
 
     logging.info("Reconciling transactions")
 
+    _, _, excluded_from_matching = split_unmatchable(
+        internal_df,
+        bank_df
+    )
+
     reconciled = reconcile_transactions(
         internal_df,
         bank_df
@@ -155,6 +161,7 @@ def main():
         amount_mismatches,
         status_mismatches,
         currency_mismatches,
+        excluded_from_matching,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -175,6 +182,7 @@ def main():
         amount_mismatches,
         status_mismatches,
         currency_mismatches,
+        excluded_from_matching,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -195,6 +203,7 @@ def main():
         amount_mismatches,
         status_mismatches,
         currency_mismatches,
+        excluded_from_matching,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,

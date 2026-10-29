@@ -7,6 +7,7 @@ from src.reconciler import (
     find_amount_mismatches,
     find_status_mismatches,
     find_currency_mismatches,
+    split_unmatchable,
 )
 
 from src.validator import (
@@ -71,6 +72,71 @@ def test_missing_transaction_id():
 
     assert len(missing_ids) == 1
     assert len(duplicate_ids) == 0
+
+def test_blank_ids_are_not_matched_together():
+    internal_df = pd.DataFrame({
+        "transaction_id": ["TX001", None],
+        "date": ["2026-10-01", "2026-10-02"],
+        "currency": ["EUR", "EUR"],
+        "amount": [100.0, 999.0],
+        "status": ["SETTLED", "SETTLED"],
+    })
+
+    bank_df = pd.DataFrame({
+        "transaction_id": ["TX001", None],
+        "date": ["2026-10-01", "2026-10-02"],
+        "currency": ["EUR", "USD"],
+        "amount": [100.0, 5.0],
+        "status": ["SETTLED", "PENDING"],
+    })
+
+    reconciled = reconcile_transactions(
+        internal_df,
+        bank_df
+    )
+
+    assert reconciled["transaction_id"].tolist() == ["TX001"]
+
+def test_duplicate_ids_are_set_aside():
+    internal_df = pd.DataFrame({
+        "transaction_id": ["TX001", "TX001", "TX002"],
+        "date": ["2026-10-01", "2026-10-01", "2026-10-02"],
+        "currency": ["EUR", "EUR", "EUR"],
+        "amount": [100.0, 100.0, 200.0],
+        "status": ["SETTLED", "SETTLED", "SETTLED"],
+    })
+
+    bank_df = pd.DataFrame({
+        "transaction_id": ["TX001", "TX002"],
+        "date": ["2026-10-01", "2026-10-02"],
+        "currency": ["EUR", "EUR"],
+        "amount": [100.0, 200.0],
+        "status": ["SETTLED", "SETTLED"],
+    })
+
+    reconciled = reconcile_transactions(
+        internal_df,
+        bank_df
+    )
+
+    missing_from_bank, missing_from_internal = (
+        find_missing_transactions(reconciled)
+    )
+
+    assert reconciled["transaction_id"].tolist() == ["TX002"]
+    assert len(missing_from_bank) == 0
+    assert len(missing_from_internal) == 0
+
+    _, _, excluded = split_unmatchable(
+        internal_df,
+        bank_df
+    )
+
+    assert excluded["source"].tolist() == [
+        "internal",
+        "internal",
+        "bank",
+    ]
 
 def test_amount_mismatch():
     internal_df = pd.DataFrame({
