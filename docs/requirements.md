@@ -98,6 +98,19 @@ As an operations analyst, I want amounts in different currencies to be compared 
 - If the exchange-rate API is unavailable or returns an unexpected response, the reconciliation still completes and amounts in different currencies are not compared.
 - A warning is logged when FX data cannot be retrieved.
 
+### Story 8: Extract bank transactions from PDF statements
+
+As an operations analyst, I want bank transactions to be extracted from PDF bank statements automatically so that I can reconcile them without retyping the statement into a spreadsheet.
+
+#### Acceptance Criteria
+
+- A PDF statement can be passed with `--bank-statement` instead of reading `bankTransactions.csv`.
+- Extracted transactions have the same columns as `bankTransactions.csv`.
+- Values are copied as printed, so invalid values are still reported by validation.
+- Extracted transactions are saved to `output/extractedBankTransactions.csv` for review.
+- If extraction fails or is incomplete, the run fails with a clear error instead of reconciling partial data.
+- Automated tests do not call the API.
+
 ## Definition of Done
 
 A feature is considered complete when:
