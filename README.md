@@ -1,5 +1,7 @@
 # Transaction Reconciliation Automation
 
+[![Tests](https://github.com/ArijusK/transactionReconciliationAutomation/actions/workflows/tests.yml/badge.svg)](https://github.com/ArijusK/transactionReconciliationAutomation/actions/workflows/tests.yml)
+
 A Python-based automation project that compares internal transaction records with bank transaction records, validates input data, identifies discrepancies, and generates a structured Excel reconciliation report.
 
 This project was built to simulate a real-world financial operations automation workflow.
@@ -315,6 +317,8 @@ Run the automated test suite with:
 ```bash
 python -m pytest
 ```
+
+The same tests run automatically on GitHub Actions for Python 3.11, 3.12 and 3.13 on every push to `main` and every pull request.
 
 The tests cover areas such as:
 
