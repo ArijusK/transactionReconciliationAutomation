@@ -26,6 +26,16 @@ REPORT_SECTIONS = [
     ("bank_invalid_currencies", "Bank invalid currencies", "Bank Bad Currency"),
 ]
 
+AMOUNT_COLUMNS = {
+    "amount",
+    "amount_internal",
+    "amount_bank",
+    "bank_amount_converted",
+    "difference",
+}
+
+AMOUNT_FORMAT = "#,##0.00"
+
 INTERNAL_COLUMNS = [
     "transaction_id",
     "date_internal",
@@ -86,13 +96,19 @@ def format_worksheet(worksheet):
 
     for column_cells in worksheet.columns:
         max_length = 0
+        is_amount_column = column_cells[0].value in AMOUNT_COLUMNS
 
         for cell in column_cells:
-            if cell.value is not None:
-                max_length = max(
-                    max_length,
-                    len(str(cell.value))
-                )
+            if cell.value is None:
+                continue
+
+            text = str(cell.value)
+
+            if is_amount_column and isinstance(cell.value, (int, float)):
+                cell.number_format = AMOUNT_FORMAT
+                text = f"{cell.value:,.2f}"
+
+            max_length = max(max_length, len(text))
 
         column_letter = column_cells[0].column_letter
         worksheet.column_dimensions[column_letter].width = max_length + 2

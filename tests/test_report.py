@@ -64,3 +64,18 @@ def test_matched_transactions_are_counted_and_listed(report_path):
     assert summary["Matched by ID"] == 5
     assert len(matched) == 5
     assert "_merge" not in matched.columns
+
+
+def test_amounts_are_shown_with_two_decimals(report_path):
+    worksheet = load_workbook(report_path)["Amount Mismatches"]
+    headers = [cell.value for cell in worksheet[1]]
+
+    for column in [
+        "amount_internal",
+        "amount_bank",
+        "bank_amount_converted",
+        "difference",
+    ]:
+        cell = worksheet.cell(row=2, column=headers.index(column) + 1)
+
+        assert cell.number_format == "#,##0.00"
