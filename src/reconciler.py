@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def reconcile_transactions(internal_df, bank_df):
     return internal_df.merge(
         bank_df,
@@ -23,8 +26,13 @@ def find_amount_mismatches(reconciled):
        reconciled["_merge"] == "both"
     ].copy()
 
+    amount_internal = pd.to_numeric(both["amount_internal"], errors="coerce")
+    amount_bank = pd.to_numeric(both["amount_bank"], errors="coerce")
+
+    comparable = amount_internal.notna() & amount_bank.notna()
+
     return both[
-        both["amount_internal"] != both["amount_bank"]
+        comparable & (amount_internal != amount_bank)
     ]
 
 def find_status_mismatches(reconciled):

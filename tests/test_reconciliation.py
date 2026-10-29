@@ -104,6 +104,34 @@ def test_amount_mismatch():
         == "TX001"
     )
 
+def test_invalid_amount_does_not_flag_other_rows():
+    internal_df = pd.DataFrame({
+        "transaction_id": ["TX001", "TX002", "TX003"],
+        "date": ["2026-10-01", "2026-10-01", "2026-10-01"],
+        "currency": ["EUR", "EUR", "EUR"],
+        "amount": ["100.00", "200.00", "not-a-number"],
+        "status": ["SETTLED", "SETTLED", "SETTLED"],
+    })
+
+    bank_df = pd.DataFrame({
+        "transaction_id": ["TX001", "TX002", "TX003"],
+        "date": ["2026-10-01", "2026-10-01", "2026-10-01"],
+        "currency": ["EUR", "EUR", "EUR"],
+        "amount": [100.0, 200.0, 300.0],
+        "status": ["SETTLED", "SETTLED", "SETTLED"],
+    })
+
+    reconciled = reconcile_transactions(
+        internal_df,
+        bank_df
+    )
+
+    amount_mismatches = find_amount_mismatches(
+        reconciled
+    )
+
+    assert len(amount_mismatches) == 0
+
 def test_status_mismatch():
     internal_df = pd.DataFrame({
         "transaction_id": ["TX001"],
