@@ -113,6 +113,14 @@ def format_worksheet(worksheet):
         column_letter = column_cells[0].column_letter
         worksheet.column_dimensions[column_letter].width = max_length + 2
 
+def export_extracted_transactions(transactions_df):
+    OUTPUT_DIR.mkdir(exist_ok=True)
+
+    transactions_df.to_csv(
+        OUTPUT_DIR / "extractedBankTransactions.csv",
+        index=False
+    )
+
 def export_results(summary_df, fx_summary_df, results):
     OUTPUT_DIR.mkdir(exist_ok=True)
 

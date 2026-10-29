@@ -1,4 +1,5 @@
 from pathlib import Path
+import argparse
 import logging
 import sys
 import pandas as pd
@@ -8,6 +9,7 @@ from src.exchange_rates import (
     ExchangeRateError,
 )
 from src.loader import load_transactions
+from src.statement_extractor import extract_transactions
 from src.validator import (
     VALID_CURRENCIES,
     validate_columns,
@@ -30,6 +32,7 @@ from src.report import (
     build_summary,
     print_summary,
     export_results,
+    export_extracted_transactions,
 )
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,14 +51,21 @@ logging.basicConfig(
     format="%(levelname)s: %(message)s"
 )
 
-def main():
+def main(bank_statement=None):
     internal_file = DATA_DIR / "internalTransactions.csv"
     bank_file = DATA_DIR / "bankTransactions.csv"
 
     logging.info("Loading transaction files")
 
     internal_df = load_transactions(internal_file)
-    bank_df = load_transactions(bank_file)
+
+    if bank_statement:
+        logging.info("Extracting bank transactions from %s", bank_statement)
+
+        bank_df = extract_transactions(bank_statement)
+        export_extracted_transactions(bank_df)
+    else:
+        bank_df = load_transactions(bank_file)
 
     logging.info("Validating input data")
 
@@ -195,9 +205,26 @@ def main():
     logging.info("Reconciliation report generated successfully")
 
 
-def run():
+def parse_args(argv):
+    parser = argparse.ArgumentParser(
+        description="Reconcile internal and bank transactions."
+    )
+
+    parser.add_argument(
+        "--bank-statement",
+        type=Path,
+        help="PDF bank statement to extract the bank transactions from "
+             "with Claude, instead of reading bankTransactions.csv"
+    )
+
+    return parser.parse_args(argv)
+
+
+def run(argv=()):
+    args = parse_args(argv)
+
     try:
-        main()
+        main(args.bank_statement)
 
     except Exception as error:
         logging.error(error)
@@ -207,6 +234,6 @@ def run():
 
 
 if __name__ == "__main__":
-    sys.exit(run())
+    sys.exit(run(sys.argv[1:]))
 
 
