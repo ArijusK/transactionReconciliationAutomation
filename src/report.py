@@ -25,7 +25,25 @@ REPORT_SECTIONS = [
     ("bank_invalid_currencies", "Bank invalid currencies", "Bank Bad Currency"),
 ]
 
+INTERNAL_COLUMNS = [
+    "transaction_id",
+    "date_internal",
+    "currency_internal",
+    "amount_internal",
+    "status_internal",
+]
+
+BANK_COLUMNS = [
+    "transaction_id",
+    "date_bank",
+    "currency_bank",
+    "amount_bank",
+    "status_bank",
+]
+
 SHEET_COLUMNS = {
+    "missing_from_bank": INTERNAL_COLUMNS,
+    "missing_from_internal": BANK_COLUMNS,
     "amount_mismatches": [
         "transaction_id",
         "currency_internal",
