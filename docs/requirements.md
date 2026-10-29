@@ -21,6 +21,7 @@ As an operations analyst, I want internal and bank transactions to be matched au
 - Transactions are matched using `transaction_id`.
 - Transactions present in both sources are compared.
 - Transactions missing from either source are identified.
+- Transactions with a blank or duplicated ID are excluded from matching and listed for manual review.
 - The reconciliation completes without manual row-by-row comparison.
 
 ### Story 2: Detect amount mismatches
@@ -29,9 +30,11 @@ As an operations analyst, I want amount differences to be identified automatical
 
 #### Acceptance Criteria
 
-- The internal amount is compared with the bank amount.
-- A transaction is flagged when the values differ.
-- The report shows the transaction ID and both amounts.
+- The internal amount is compared with the bank amount, to the cent.
+- A transaction is flagged when the difference is larger than the configured tolerance.
+- When the currencies differ, the bank amount is converted into the internal currency using FX rates and compared within an FX tolerance.
+- Rows with an invalid amount are not compared; they are reported by validation.
+- The report shows the transaction ID, both currencies and amounts, the converted amount and the difference.
 
 ### Story 3: Detect status mismatches
 
@@ -82,14 +85,15 @@ As an operations analyst, I want reconciliation results exported into an Excel r
 
 ### Story 7: Retrieve exchange-rate information
 
-As an operations analyst, I want relevant exchange rates included in the report so that I can view FX information alongside reconciliation results.
+As an operations analyst, I want amounts in different currencies to be compared using exchange rates, and the rates included in the report, so that I can see whether a cross-currency transaction has the same value.
 
 #### Acceptance Criteria
 
 - Exchange rates are retrieved only for supported currencies used in the input data.
 - EUR is used as the base currency.
 - Exchange-rate results are included in an FX Rates worksheet.
-- If the exchange-rate API is unavailable, the reconciliation still completes.
+- Exchange rates are used to compare amounts in different currencies.
+- If the exchange-rate API is unavailable or returns an unexpected response, the reconciliation still completes and amounts in different currencies are not compared.
 - A warning is logged when FX data cannot be retrieved.
 
 ## Definition of Done
@@ -100,4 +104,5 @@ A feature is considered complete when:
 - relevant automated tests pass;
 - input errors are handled appropriately;
 - documentation is updated when necessary;
-- the application runs successfully from the project root.
+- the application runs successfully from the project root;
+- the application exits with a non-zero status when it fails.

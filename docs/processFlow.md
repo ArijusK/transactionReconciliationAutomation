@@ -17,8 +17,8 @@
 3. Currency values are normalized.
 4. Data-quality issues such as missing IDs, duplicates, invalid amounts, invalid dates, and invalid currencies are identified.
 5. Relevant exchange rates are retrieved from an external API when available.
-6. Transactions are matched automatically using transaction IDs.
-7. Missing transactions and amount, status, and currency mismatches are identified.
+6. Rows with blank or duplicated transaction IDs are set aside for manual review; the rest are matched automatically using transaction IDs.
+7. Missing transactions and amount, status, and currency mismatches are identified. Amounts in different currencies are compared using FX rates.
 8. A reconciliation summary is generated.
 9. An Excel report is created automatically.
 10. The analyst reviews the generated exceptions and validation results.

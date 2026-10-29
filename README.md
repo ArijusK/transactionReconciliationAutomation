@@ -38,9 +38,11 @@ The application currently supports:
 - invalid date detection
 - currency normalization and validation
 - transaction matching by transaction ID
+- blank and duplicated transaction IDs set aside for manual review instead of being matched
 - detection of transactions missing from bank records
 - detection of transactions missing from internal records
-- amount mismatch detection
+- amount mismatch detection, compared to the cent with a configurable tolerance
+- cross-currency amount comparison using live FX rates
 - status mismatch detection
 - currency mismatch detection
 - exchange-rate retrieval through an external REST API
@@ -50,6 +52,7 @@ The application currently supports:
 - automatic Excel column sizing
 - frozen Excel header rows
 - logging and basic error handling
+- non-zero exit code on failure, so schedulers and RPA tools can detect failed runs
 - automated testing with pytest
 
 ## Example Reconciliation
@@ -136,6 +139,7 @@ TransactionReconciliationAutomation/
 │
 ├── tests/
 │   ├── test_exchange_rates.py
+│   ├── test_main.py
 │   └── test_reconciliation.py
 │
 ├── output/
@@ -175,9 +179,10 @@ Contains input validation logic including:
 
 Contains the main reconciliation logic including:
 
+- setting aside blank and duplicated transaction IDs
 - transaction matching
 - missing transaction detection
-- amount mismatch detection
+- amount mismatch detection, including FX conversion when currencies differ
 - status mismatch detection
 - currency mismatch detection
 
@@ -205,6 +210,8 @@ Coordinates the complete workflow.
 
 ## Setup
 
+Requires Python 3.11 or newer.
+
 ### 1. Clone the repository
 
 ```bash
@@ -229,6 +236,12 @@ On Windows:
 
 ```bash
 .venv\Scripts\activate
+```
+
+On macOS / Linux:
+
+```bash
+source .venv/bin/activate
 ```
 
 ### 5. Install dependencies
@@ -261,6 +274,17 @@ The generated report is saved to:
 output/reconciliationReport.xlsx
 ```
 
+The process exits with code `0` on success and `1` on failure.
+
+## Matching Rules
+
+- Transactions are matched by `transaction_id`.
+- Rows with a blank ID, or an ID that appears more than once in either file, cannot be matched reliably. They are excluded from matching and listed on the **Excluded From Matching** sheet for manual review.
+- Amounts are compared to the cent. `AMOUNT_TOLERANCE` in `src/reconciler.py` sets the accepted difference (default `0.00`).
+- When the two currencies differ, the bank amount is converted into the internal currency using EUR-based FX rates and compared within `FX_TOLERANCE` (default 1%), because the rates are current rather than from the transaction date.
+- If FX rates are unavailable, amounts in different currencies are not compared. These transactions still appear on the **Currency Mismatches** sheet.
+- Rows with an invalid amount are reported by validation and skipped in the amount comparison.
+
 ## Excel Report
 
 The generated Excel report contains:
@@ -268,9 +292,10 @@ The generated Excel report contains:
 - a reconciliation summary
 - current FX rates
 - missing transaction reports
-- amount mismatch reports
+- amount mismatch reports with converted amounts and differences
 - status mismatch reports
 - currency mismatch reports
+- transactions excluded from matching
 - transaction ID validation results
 - duplicate transaction reports
 - invalid amount reports
@@ -295,7 +320,9 @@ The tests cover areas such as:
 
 - missing transactions
 - missing transaction IDs
-- amount mismatches
+- blank and duplicated IDs excluded from matching
+- amount mismatches, rounding noise and tolerances
+- cross-currency amount comparison
 - status mismatches
 - currency mismatches
 - missing required columns
@@ -305,7 +332,8 @@ The tests cover areas such as:
 - currency normalization
 - invalid currencies
 - successful exchange-rate API responses
-- API failure handling
+- API failure and unexpected API response handling
+- end-to-end runs, including exit codes and runs without FX data
 
 ## Example Summary
 
@@ -319,6 +347,7 @@ Missing from internal: 1
 Amount mismatches: 1
 Status mismatches: 1
 Currency mismatches: 1
+Excluded from matching: 0
 Internal missing IDs: 0
 Bank missing IDs: 0
 Internal duplicates: 0
@@ -354,7 +383,8 @@ Possible future enhancements include:
 - configurable input filenames
 - command-line arguments
 - database storage
-- configurable reconciliation tolerances
+- reconciliation tolerances set from a configuration file
+- FX rates from the transaction date instead of current rates
 - transaction date comparison rules
 - logging to a file
 - richer Excel styling and conditional formatting
