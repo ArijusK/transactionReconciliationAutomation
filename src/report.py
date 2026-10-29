@@ -6,71 +6,57 @@ from openpyxl.styles import Font
 BASE_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = BASE_DIR / "output"
 
+REPORT_SECTIONS = [
+    ("missing_from_bank", "Missing from bank", "Missing From Bank"),
+    ("missing_from_internal", "Missing from internal", "Missing From Internal"),
+    ("amount_mismatches", "Amount mismatches", "Amount Mismatches"),
+    ("status_mismatches", "Status mismatches", "Status Mismatches"),
+    ("currency_mismatches", "Currency mismatches", "Currency Mismatches"),
+    ("excluded_from_matching", "Excluded from matching", "Excluded From Matching"),
+    ("internal_missing_ids", "Internal missing IDs", "Internal Missing IDs"),
+    ("bank_missing_ids", "Bank missing IDs", "Bank Missing IDs"),
+    ("internal_duplicates", "Internal duplicates", "Internal Duplicates"),
+    ("bank_duplicates", "Bank duplicates", "Bank Duplicates"),
+    ("internal_invalid_amounts", "Internal invalid amounts", "Internal Invalid Amounts"),
+    ("bank_invalid_amounts", "Bank invalid amounts", "Bank Invalid Amounts"),
+    ("internal_invalid_dates", "Internal invalid dates", "Internal Invalid Dates"),
+    ("bank_invalid_dates", "Bank invalid dates", "Bank Invalid Dates"),
+    ("internal_invalid_currencies", "Internal invalid currencies", "Internal Bad Currency"),
+    ("bank_invalid_currencies", "Bank invalid currencies", "Bank Bad Currency"),
+]
 
-def build_summary(
-    internal_df,
-    bank_df,
-    missing_from_bank,
-    missing_from_internal,
-    amount_mismatches,
-    status_mismatches,
-    currency_mismatches,
-    excluded_from_matching,
-    internal_missing_ids,
-    bank_missing_ids,
-    internal_duplicates,
-    bank_duplicates,
-    internal_invalid_amounts,
-    bank_invalid_amounts,
-    internal_invalid_dates,
-    bank_invalid_dates,
-    internal_invalid_currencies,
-    bank_invalid_currencies,
-):
-    summary_data = {
-        "Metric": [
-            "Internal transactions",
-            "Bank transactions",
-            "Missing from bank",
-            "Missing from internal",
-            "Amount mismatches",
-            "Status mismatches",
-            "Currency mismatches",
-            "Excluded from matching",
-            "Internal missing IDs",
-            "Bank missing IDs",
-            "Internal duplicates",
-            "Bank duplicates",
-            "Internal invalid amounts",
-            "Bank invalid amounts",
-            "Internal invalid dates",
-            "Bank invalid dates",
-            "Internal invalid currencies",
-            "Bank invalid currencies",
-        ],
-        "Count": [
-            len(internal_df),
-            len(bank_df),
-            len(missing_from_bank),
-            len(missing_from_internal),
-            len(amount_mismatches),
-            len(status_mismatches),
-            len(currency_mismatches),
-            len(excluded_from_matching),
-            len(internal_missing_ids),
-            len(bank_missing_ids),
-            len(internal_duplicates),
-            len(bank_duplicates),
-            len(internal_invalid_amounts),
-            len(bank_invalid_amounts),
-            len(internal_invalid_dates),
-            len(bank_invalid_dates),
-            len(internal_invalid_currencies),
-            len(bank_invalid_currencies),
-        ],
-    }
+SHEET_COLUMNS = {
+    "amount_mismatches": [
+        "transaction_id",
+        "currency_internal",
+        "amount_internal",
+        "currency_bank",
+        "amount_bank",
+        "bank_amount_converted",
+        "difference",
+    ],
+    "status_mismatches": [
+        "transaction_id",
+        "status_internal",
+        "status_bank",
+    ],
+    "currency_mismatches": [
+        "transaction_id",
+        "currency_internal",
+        "currency_bank",
+    ],
+}
 
-    return pd.DataFrame(summary_data)
+
+def build_summary(internal_df, bank_df, results):
+    metrics = ["Internal transactions", "Bank transactions"]
+    counts = [len(internal_df), len(bank_df)]
+
+    for key, metric, _ in REPORT_SECTIONS:
+        metrics.append(metric)
+        counts.append(len(results[key]))
+
+    return pd.DataFrame({"Metric": metrics, "Count": counts})
 
 def format_worksheet(worksheet):
     for cell in worksheet[1]:
@@ -91,26 +77,7 @@ def format_worksheet(worksheet):
         column_letter = column_cells[0].column_letter
         worksheet.column_dimensions[column_letter].width = max_length + 2
 
-def export_results(
-    summary_df,
-    fx_summary_df,
-    missing_from_bank,
-    missing_from_internal,
-    amount_mismatches,
-    status_mismatches,
-    currency_mismatches,
-    excluded_from_matching,
-    internal_missing_ids,
-    bank_missing_ids,
-    internal_duplicates,
-    bank_duplicates,
-    internal_invalid_amounts,
-    bank_invalid_amounts,
-    internal_invalid_dates,
-    bank_invalid_dates,
-    internal_invalid_currencies,
-    bank_invalid_currencies,
-):
+def export_results(summary_df, fx_summary_df, results):
     OUTPUT_DIR.mkdir(exist_ok=True)
 
     report_path = OUTPUT_DIR / "reconciliationReport.xlsx"
@@ -128,170 +95,24 @@ def export_results(
             index=False
         )
 
-        missing_from_bank.to_excel(
-            writer,
-            sheet_name="Missing From Bank",
-            index=False
-        )
+        for key, _, sheet_name in REPORT_SECTIONS:
+            sheet_df = results[key]
 
-        missing_from_internal.to_excel(
-            writer,
-            sheet_name="Missing From Internal",
-            index=False
-        )
+            if key in SHEET_COLUMNS:
+                sheet_df = sheet_df[SHEET_COLUMNS[key]]
 
-        amount_mismatches[
-            [
-                "transaction_id",
-                "currency_internal",
-                "amount_internal",
-                "currency_bank",
-                "amount_bank",
-                "bank_amount_converted",
-                "difference",
-            ]
-        ].to_excel(
-            writer,
-            sheet_name="Amount Mismatches",
-            index=False
-        )
-
-        status_mismatches[
-            [
-                "transaction_id",
-                "status_internal",
-                "status_bank",
-            ]
-        ].to_excel(
-            writer,
-            sheet_name="Status Mismatches",
-            index=False
-        )
-
-        currency_mismatches[
-            [
-                "transaction_id",
-                "currency_internal",
-                "currency_bank",
-            ]
-        ].to_excel(
-            writer,
-            sheet_name="Currency Mismatches",
-            index=False
-        )
-
-        excluded_from_matching.to_excel(
-            writer,
-            sheet_name="Excluded From Matching",
-            index=False
-        )
-
-        internal_missing_ids.to_excel(
-            writer,
-            sheet_name="Internal Missing IDs",
-            index=False
-        )
-
-        bank_missing_ids.to_excel(
-            writer,
-            sheet_name="Bank Missing IDs",
-            index=False
-        )
-
-        internal_duplicates.to_excel(
-            writer,
-            sheet_name="Internal Duplicates",
-            index=False
-        )
-
-        bank_duplicates.to_excel(
-            writer,
-            sheet_name="Bank Duplicates",
-            index=False
-        )
-
-        internal_invalid_amounts.to_excel(
-            writer,
-            sheet_name="Internal Invalid Amounts",
-            index=False
-        )
-
-        bank_invalid_amounts.to_excel(
-            writer,
-            sheet_name="Bank Invalid Amounts",
-            index=False
-        )
-
-        internal_invalid_dates.to_excel(
-            writer,
-            sheet_name="Internal Invalid Dates",
-            index=False
-        )
-
-        bank_invalid_dates.to_excel(
-            writer,
-            sheet_name="Bank Invalid Dates",
-            index=False
-        )
-
-        internal_invalid_currencies.to_excel(
-            writer,
-            sheet_name="Internal Bad Currency",
-            index=False
-        )
-
-        bank_invalid_currencies.to_excel(
-            writer,
-            sheet_name="Bank Bad Currency",
-            index=False
-        )
+            sheet_df.to_excel(
+                writer,
+                sheet_name=sheet_name,
+                index=False
+            )
 
         for worksheet in writer.book.worksheets:
             format_worksheet(worksheet)
 
-def print_summary(
-    internal_df,
-    bank_df,
-    missing_from_bank,
-    missing_from_internal,
-    amount_mismatches,
-    status_mismatches,
-    currency_mismatches,
-    excluded_from_matching,
-    internal_missing_ids,
-    bank_missing_ids,
-    internal_duplicates,
-    bank_duplicates,
-    internal_invalid_amounts,
-    bank_invalid_amounts,
-    internal_invalid_dates,
-    bank_invalid_dates,
-    internal_invalid_currencies,
-    bank_invalid_currencies,
-):
+def print_summary(summary_df):
     print("\nRECONCILIATION SUMMARY")
     print("----------------------")
-    print(f"Internal transactions: {len(internal_df)}")
-    print(f"Bank transactions: {len(bank_df)}")
-    print(f"Missing from bank: {len(missing_from_bank)}")
-    print(f"Missing from internal: {len(missing_from_internal)}")
-    print(f"Amount mismatches: {len(amount_mismatches)}")
-    print(f"Status mismatches: {len(status_mismatches)}")
-    print(f"Currency mismatches: {len(currency_mismatches)}")
-    print(f"Excluded from matching: {len(excluded_from_matching)}")
-    print(f"Internal missing IDs: {len(internal_missing_ids)}")
-    print(f"Bank missing IDs: {len(bank_missing_ids)}")
-    print(f"Internal duplicates: {len(internal_duplicates)}")
-    print(f"Bank duplicates: {len(bank_duplicates)}")
-    print(f"Internal invalid amounts: {len(internal_invalid_amounts)}")
-    print(f"Bank invalid amounts: {len(bank_invalid_amounts)}")
-    print(f"Internal invalid dates: {len(internal_invalid_dates)}")
-    print(f"Bank invalid dates: {len(bank_invalid_dates)}")
-    print(
-        f"Internal invalid currencies: "
-        f"{len(internal_invalid_currencies)}"
-    )
-    print(
-        f"Bank invalid currencies: "
-        f"{len(bank_invalid_currencies)}"
-    )
+
+    for metric, count in zip(summary_df["Metric"], summary_df["Count"]):
+        print(f"{metric}: {count}")

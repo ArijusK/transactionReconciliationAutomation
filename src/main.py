@@ -163,68 +163,30 @@ def main():
     status_mismatches = find_status_mismatches(reconciled)
     currency_mismatches = find_currency_mismatches(reconciled)
 
-    summary_df = build_summary(
-        internal_df,
-        bank_df,
-        missing_from_bank,
-        missing_from_internal,
-        amount_mismatches,
-        status_mismatches,
-        currency_mismatches,
-        excluded_from_matching,
-        internal_missing_ids,
-        bank_missing_ids,
-        internal_duplicates,
-        bank_duplicates,
-        internal_invalid_amounts,
-        bank_invalid_amounts,
-        internal_invalid_dates,
-        bank_invalid_dates,
-        internal_invalid_currencies,
-        bank_invalid_currencies,
-    )   
+    results = {
+        "missing_from_bank": missing_from_bank,
+        "missing_from_internal": missing_from_internal,
+        "amount_mismatches": amount_mismatches,
+        "status_mismatches": status_mismatches,
+        "currency_mismatches": currency_mismatches,
+        "excluded_from_matching": excluded_from_matching,
+        "internal_missing_ids": internal_missing_ids,
+        "bank_missing_ids": bank_missing_ids,
+        "internal_duplicates": internal_duplicates,
+        "bank_duplicates": bank_duplicates,
+        "internal_invalid_amounts": internal_invalid_amounts,
+        "bank_invalid_amounts": bank_invalid_amounts,
+        "internal_invalid_dates": internal_invalid_dates,
+        "bank_invalid_dates": bank_invalid_dates,
+        "internal_invalid_currencies": internal_invalid_currencies,
+        "bank_invalid_currencies": bank_invalid_currencies,
+    }
 
-    print_summary(
-        internal_df,
-        bank_df,
-        missing_from_bank,
-        missing_from_internal,
-        amount_mismatches,
-        status_mismatches,
-        currency_mismatches,
-        excluded_from_matching,
-        internal_missing_ids,
-        bank_missing_ids,
-        internal_duplicates,
-        bank_duplicates,
-        internal_invalid_amounts,
-        bank_invalid_amounts,
-        internal_invalid_dates,
-        bank_invalid_dates,
-        internal_invalid_currencies,
-        bank_invalid_currencies,
-    )
+    summary_df = build_summary(internal_df, bank_df, results)
 
-    export_results(
-        summary_df,
-        fx_summary_df,
-        missing_from_bank,
-        missing_from_internal,
-        amount_mismatches,
-        status_mismatches,
-        currency_mismatches,
-        excluded_from_matching,
-        internal_missing_ids,
-        bank_missing_ids,
-        internal_duplicates,
-        bank_duplicates,
-        internal_invalid_amounts,
-        bank_invalid_amounts,
-        internal_invalid_dates,
-        bank_invalid_dates,
-        internal_invalid_currencies,
-        bank_invalid_currencies,
-    )
+    print_summary(summary_df)
+
+    export_results(summary_df, fx_summary_df, results)
 
     logging.info("Reconciliation report generated successfully")
 
