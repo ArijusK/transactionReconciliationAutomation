@@ -314,7 +314,7 @@ Design choices:
 
 `data/statements/bankStatement.pdf` is a fictional statement with the same transactions as `bankTransactions.csv`, printed the way a bank would (`01.10.2026`, `1,250.00`, "pending" in the description), so both inputs should produce the same report.
 
-This option needs an Anthropic API key, which is billed per use. One run on the sample statement costs well under one cent.
+This option needs an Anthropic API key, which is billed per use. One run on the sample statement should cost a few cents.
 
 Windows (PowerShell):
 
