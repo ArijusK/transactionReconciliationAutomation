@@ -30,8 +30,13 @@ def get_exchange_rate(base_currency, quote_currency):
 
         data = response.json()
 
-        return data["rate"]
-    except requests.RequestException as error:
+        return float(data["rate"])
+    except (
+        requests.RequestException,
+        KeyError,
+        TypeError,
+        ValueError,
+    ) as error:
         raise ExchangeRateError(
             f"Failed to fetch {base_currency}/{quote_currency} rate"
         ) from error

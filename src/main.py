@@ -1,5 +1,6 @@
 from pathlib import Path
 import logging
+import sys
 import pandas as pd
 
 from src.exchange_rates import (
@@ -22,6 +23,7 @@ from src.reconciler import (
     find_amount_mismatches,
     find_status_mismatches,
     find_currency_mismatches,
+    split_unmatchable,
 )
 from src.report import (
     build_summary,
@@ -127,12 +129,26 @@ def main():
             exchange_rates
         )
 
+        fx_rates = {
+            rate["quote_currency"]: rate["rate"]
+            for rate in exchange_rates
+        }
+
     except ExchangeRateError as error:
         logging.warning(error)
+        logging.warning(
+            "Amounts in different currencies will not be compared"
+        )
         fx_summary_df = pd.DataFrame()
+        fx_rates = {}
 
 
     logging.info("Reconciling transactions")
+
+    _, _, excluded_from_matching = split_unmatchable(
+        internal_df,
+        bank_df
+    )
 
     reconciled = reconcile_transactions(
         internal_df,
@@ -143,7 +159,7 @@ def main():
         find_missing_transactions(reconciled)
     )
     
-    amount_mismatches = find_amount_mismatches(reconciled)
+    amount_mismatches = find_amount_mismatches(reconciled, fx_rates)
     status_mismatches = find_status_mismatches(reconciled)
     currency_mismatches = find_currency_mismatches(reconciled)
 
@@ -155,6 +171,7 @@ def main():
         amount_mismatches,
         status_mismatches,
         currency_mismatches,
+        excluded_from_matching,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -175,6 +192,7 @@ def main():
         amount_mismatches,
         status_mismatches,
         currency_mismatches,
+        excluded_from_matching,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -195,6 +213,7 @@ def main():
         amount_mismatches,
         status_mismatches,
         currency_mismatches,
+        excluded_from_matching,
         internal_missing_ids,
         bank_missing_ids,
         internal_duplicates,
@@ -210,11 +229,18 @@ def main():
     logging.info("Reconciliation report generated successfully")
 
 
-if __name__ == "__main__":
+def run():
     try:
         main()
 
     except Exception as error:
         logging.error(error)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(run())
 
 
