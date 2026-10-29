@@ -12,7 +12,7 @@
 
 ## Future State (TO-BE)
 
-1. Internal and bank transaction files are provided to the Python automation.
+1. Internal and bank transaction files are provided to the Python automation. When the bank only provides a PDF statement, Claude extracts the transactions from it into the same format, and the extracted rows are saved for review.
 2. Required columns are validated.
 3. Currency values are normalized.
 4. Data-quality issues such as missing IDs, duplicates, invalid amounts, invalid dates, and invalid currencies are identified.

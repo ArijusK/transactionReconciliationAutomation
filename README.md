@@ -33,6 +33,7 @@ It then validates the input data, reconciles transactions using their transactio
 The application currently supports:
 
 - CSV transaction data loading
+- transaction extraction from PDF bank statements with Claude (structured outputs)
 - required-column validation
 - missing transaction ID detection
 - duplicate transaction ID detection
@@ -121,7 +122,9 @@ TransactionReconciliationAutomation/
 │
 ├── data/
 │   ├── internalTransactions.csv
-│   └── bankTransactions.csv
+│   ├── bankTransactions.csv
+│   └── statements/
+│       └── bankStatement.pdf
 │
 ├── docs/
 │   ├── images/
@@ -137,12 +140,15 @@ TransactionReconciliationAutomation/
 │   ├── main.py
 │   ├── reconciler.py
 │   ├── report.py
+│   ├── statement_extractor.py
 │   └── validator.py
 │
 ├── tests/
 │   ├── test_exchange_rates.py
 │   ├── test_main.py
-│   └── test_reconciliation.py
+│   ├── test_reconciliation.py
+│   ├── test_report.py
+│   └── test_statement_extractor.py
 │
 ├── output/
 │
@@ -164,6 +170,14 @@ Responsible for:
 - retrieving exchange rates from an external REST API
 - normalizing requested currency codes
 - handling API and network failures through a custom exception
+
+### `statement_extractor.py`
+
+Responsible for:
+
+- sending PDF bank statements to the Claude API
+- requesting the transactions as JSON matching a fixed schema
+- raising `StatementExtractionError` for API errors, incomplete responses and a missing API key
 
 ### `validator.py`
 
@@ -194,6 +208,7 @@ Responsible for:
 
 - generating reconciliation summaries
 - exporting results to Excel
+- saving extracted statement transactions to CSV
 - formatting Excel worksheets
 
 ### `main.py`
@@ -206,6 +221,7 @@ Coordinates the complete workflow.
 - pandas
 - openpyxl
 - requests
+- Anthropic Python SDK (Claude API)
 - pytest
 - Git
 - GitHub
@@ -270,6 +286,8 @@ The application will:
 6. print a reconciliation summary
 7. generate an Excel report
 
+To read the bank transactions from a PDF statement instead, see [Reading Bank Statements with Claude](#reading-bank-statements-with-claude).
+
 The generated report is saved to:
 
 ```text
@@ -277,6 +295,40 @@ output/reconciliationReport.xlsx
 ```
 
 The process exits with code `0` on success and `1` on failure.
+
+## Reading Bank Statements with Claude
+
+Banks often send statements as PDFs rather than CSV exports. The application can read the bank side from a PDF statement instead of `bankTransactions.csv`:
+
+```bash
+python -m src.main --bank-statement data/statements/bankStatement.pdf
+```
+
+`src/statement_extractor.py` sends the PDF to the Claude API (`claude-opus-5-5`) and uses structured outputs, so the response always matches a JSON schema with the same columns as `bankTransactions.csv`. The extracted rows then go through the same validation and matching as CSV input, and are saved to `output/extractedBankTransactions.csv` so an analyst can check what was extracted.
+
+Design choices:
+
+- **Claude extracts, the code decides.** Claude is asked to copy values as printed, not to correct them. Validation, matching and tolerances stay in deterministic, tested Python code, so an invalid currency on the statement is still reported as one.
+- **Fixed output format.** The JSON schema defines every field and its type, so a response with missing or extra fields cannot reach the reconciliation.
+- **Failures stop the run.** A missing API key, an API error or an incomplete response raises `StatementExtractionError`, and the process exits with code `1` instead of reconciling partial data.
+
+`data/statements/bankStatement.pdf` is a fictional statement with the same transactions as `bankTransactions.csv`, printed the way a bank would (`01.10.2026`, `1,250.00`, "pending" in the description), so both inputs should produce the same report.
+
+This option needs an Anthropic API key, which is billed per use. One run on the sample statement should cost a few cents.
+
+Windows (PowerShell):
+
+```powershell
+$env:ANTHROPIC_API_KEY = "your-api-key"
+```
+
+macOS / Linux:
+
+```bash
+export ANTHROPIC_API_KEY="your-api-key"
+```
+
+The automated tests use a mocked API client, so running them needs no key and makes no API calls.
 
 ## Matching Rules
 
@@ -340,6 +392,8 @@ The tests cover areas such as:
 - API failure and unexpected API response handling
 - end-to-end runs, including exit codes and runs without FX data
 - Excel report layout and amount formatting
+- PDF statement extraction with a mocked Claude API client, including incomplete responses, API failures and a missing API key
+- end-to-end runs with an extracted statement
 
 ## Example Summary
 
@@ -388,7 +442,9 @@ This project helped me practice:
 Possible future enhancements include:
 
 - configurable input filenames
-- command-line arguments
+- more command-line arguments, such as input and output paths
+- checking extracted statement totals against the statement's closing balance
+- statements with several pages or several accounts
 - database storage
 - reconciliation tolerances set from a configuration file
 - FX rates from the transaction date instead of current rates

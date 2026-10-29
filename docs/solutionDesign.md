@@ -7,7 +7,7 @@ Automate transaction reconciliation between internal records and bank records.
 ## Inputs
 
 - internalTransactions.csv
-- bankTransactions.csv
+- bankTransactions.csv, or a PDF bank statement passed with `--bank-statement`
 
 ## Required Fields
 
@@ -21,7 +21,7 @@ Automate transaction reconciliation between internal records and bank records.
 
 The application:
 
-1. Loads internal and bank transaction CSV files.
+1. Loads the internal transaction CSV file, and the bank transactions from either the bank CSV file or a PDF statement extracted with Claude.
 2. Validates the presence of required columns.
 3. Normalizes currency values.
 4. Checks for missing and duplicate transaction IDs.
@@ -45,6 +45,10 @@ The application:
 The application generates:
 
 output/reconciliationReport.xlsx
+
+When a PDF statement is used, the extracted bank transactions are also saved to:
+
+output/extractedBankTransactions.csv
 
 The Excel report contains the following sheets:
 - Summary
@@ -75,6 +79,14 @@ The rates are used to compare amounts when the internal and bank currencies diff
 
 If the service is unavailable or returns an unexpected response, the application logs a warning, skips the cross-currency amount comparison and continues generating the reconciliation report.
 
+## LLM Document Extraction
+
+PDF bank statements are sent to the Claude API (`claude-opus-5-5`) as a base64 document. Structured outputs constrain the response to a JSON schema with the required fields, so the extracted rows have the same columns and types as `bankTransactions.csv`.
+
+Claude is instructed to copy values as printed rather than correct them. Validation and reconciliation remain deterministic Python code, so the model only reads the document and never decides whether a transaction matches.
+
+If the API key is missing, the API call fails, or the response is incomplete (`max_tokens` or `refusal`), a `StatementExtractionError` is raised and the run fails rather than reconciling partial data.
+
 ## Error Handling
 
 The application handles:
@@ -85,6 +97,7 @@ The application handles:
 - invalid transaction data
 - unsupported currencies
 - exchange-rate API failures
+- PDF statement extraction failures
 - output file access errors
 
 Any failure is logged and the process exits with code `1`, so schedulers and RPA tools can detect failed runs.
@@ -111,3 +124,6 @@ The test suite covers:
 - successful exchange-rate API responses
 - exchange-rate API failures and unexpected responses
 - end-to-end runs, including exit codes and runs without FX data
+- Excel report layout and amount formatting
+- PDF statement extraction with a mocked Claude API client
+- end-to-end runs with an extracted statement
