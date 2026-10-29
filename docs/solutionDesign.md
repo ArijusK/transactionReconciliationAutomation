@@ -49,6 +49,7 @@ output/reconciliationReport.xlsx
 The Excel report contains the following sheets:
 - Summary
 - FX Rates
+- Matched By ID
 - Missing From Bank
 - Missing From Internal
 - Amount Mismatches

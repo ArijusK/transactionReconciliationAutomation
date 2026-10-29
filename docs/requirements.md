@@ -76,12 +76,14 @@ As an operations analyst, I want reconciliation results exported into an Excel r
 
 #### Acceptance Criteria
 
-- A summary sheet is generated.
-- Missing transactions are shown in separate sheets.
+- A summary sheet is generated, including the number of transactions matched by ID.
+- Transactions matched by ID are listed with the internal and bank values side by side.
+- Missing transactions are shown in separate sheets, with only the columns from the side that has the transaction.
 - Amount mismatches are shown in a dedicated sheet.
 - Status mismatches are shown in a dedicated sheet.
 - The Excel report is saved in the `output` directory.
 - Currency mismatches are shown in a dedicated sheet.
+- Amounts are shown with two decimals.
 
 ### Story 7: Retrieve exchange-rate information
 

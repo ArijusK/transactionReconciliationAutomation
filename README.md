@@ -293,7 +293,8 @@ The generated Excel report contains:
 
 - a reconciliation summary
 - current FX rates
-- missing transaction reports
+- all transactions matched by ID, with both sides side by side
+- missing transaction reports showing only the side that has the transaction
 - amount mismatch reports with converted amounts and differences
 - status mismatch reports
 - currency mismatch reports
@@ -304,7 +305,7 @@ The generated Excel report contains:
 - invalid date reports
 - invalid currency reports
 
-The Excel report includes bold headers, automatic column sizing, and frozen header rows.
+The Excel report includes bold headers, automatic column sizing, frozen header rows, and amounts shown with two decimals.
 
 ### Example Output
 
@@ -338,6 +339,7 @@ The tests cover areas such as:
 - successful exchange-rate API responses
 - API failure and unexpected API response handling
 - end-to-end runs, including exit codes and runs without FX data
+- Excel report layout and amount formatting
 
 ## Example Summary
 
@@ -346,6 +348,7 @@ RECONCILIATION SUMMARY
 ----------------------
 Internal transactions: 6
 Bank transactions: 6
+Matched by ID: 5
 Missing from bank: 1
 Missing from internal: 1
 Amount mismatches: 1
