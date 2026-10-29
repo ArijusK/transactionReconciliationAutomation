@@ -212,7 +212,7 @@ Coordinates the complete workflow.
 
 ## Setup
 
-Requires Python 3.11 or newer.
+Requires Python 3.12 or newer.
 
 ### 1. Clone the repository
 
@@ -318,7 +318,7 @@ Run the automated test suite with:
 python -m pytest
 ```
 
-The same tests run automatically on GitHub Actions for Python 3.11, 3.12 and 3.13 on every push to `main` and every pull request.
+The same tests run automatically on GitHub Actions for Python 3.12 and 3.13 on every push to `main` and every pull request.
 
 The tests cover areas such as:
 
