@@ -128,9 +128,18 @@ def main():
             exchange_rates
         )
 
+        fx_rates = {
+            rate["quote_currency"]: rate["rate"]
+            for rate in exchange_rates
+        }
+
     except ExchangeRateError as error:
         logging.warning(error)
+        logging.warning(
+            "Amounts in different currencies will not be compared"
+        )
         fx_summary_df = pd.DataFrame()
+        fx_rates = {}
 
 
     logging.info("Reconciling transactions")
@@ -149,7 +158,7 @@ def main():
         find_missing_transactions(reconciled)
     )
     
-    amount_mismatches = find_amount_mismatches(reconciled)
+    amount_mismatches = find_amount_mismatches(reconciled, fx_rates)
     status_mismatches = find_status_mismatches(reconciled)
     currency_mismatches = find_currency_mismatches(reconciled)
 

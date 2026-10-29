@@ -143,8 +143,11 @@ def export_results(
         amount_mismatches[
             [
                 "transaction_id",
+                "currency_internal",
                 "amount_internal",
+                "currency_bank",
                 "amount_bank",
+                "bank_amount_converted",
                 "difference",
             ]
         ].to_excel(

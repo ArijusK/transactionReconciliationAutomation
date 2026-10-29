@@ -207,6 +207,33 @@ def test_amount_mismatch_reports_difference():
 
     assert amount_mismatches.iloc[0]["difference"] == 10.0
 
+FX_RATES = {"EUR": 1.0, "USD": 1.15}
+
+def test_cross_currency_amounts_are_converted():
+    reconciled = make_pair(100.00, 115.00, "EUR", "USD")
+
+    assert len(find_amount_mismatches(reconciled, FX_RATES)) == 0
+
+def test_cross_currency_mismatch_is_flagged():
+    reconciled = make_pair(100.00, 150.00, "EUR", "USD")
+
+    amount_mismatches = find_amount_mismatches(reconciled, FX_RATES)
+
+    assert len(amount_mismatches) == 1
+    assert amount_mismatches.iloc[0]["bank_amount_converted"] == 130.43
+    assert amount_mismatches.iloc[0]["difference"] == -30.43
+
+def test_cross_currency_within_fx_tolerance():
+    reconciled = make_pair(100.00, 115.50, "EUR", "USD")
+
+    assert len(find_amount_mismatches(reconciled, FX_RATES)) == 0
+
+def test_cross_currency_without_rate_is_not_compared():
+    reconciled = make_pair(100.00, 150.00, "EUR", "USD")
+
+    assert len(find_amount_mismatches(reconciled)) == 0
+    assert len(find_currency_mismatches(reconciled)) == 1
+
 def test_invalid_amount_does_not_flag_other_rows():
     internal_df = pd.DataFrame({
         "transaction_id": ["TX001", "TX002", "TX003"],
