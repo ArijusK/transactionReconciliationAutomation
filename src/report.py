@@ -145,6 +145,7 @@ def export_results(
                 "transaction_id",
                 "amount_internal",
                 "amount_bank",
+                "difference",
             ]
         ].to_excel(
             writer,

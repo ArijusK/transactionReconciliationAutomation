@@ -170,6 +170,43 @@ def test_amount_mismatch():
         == "TX001"
     )
 
+def make_pair(internal_amount, bank_amount, internal_currency="EUR", bank_currency="EUR"):
+    internal_df = pd.DataFrame({
+        "transaction_id": ["TX001"],
+        "date": ["2026-10-01"],
+        "currency": [internal_currency],
+        "amount": [internal_amount],
+        "status": ["SETTLED"],
+    })
+
+    bank_df = pd.DataFrame({
+        "transaction_id": ["TX001"],
+        "date": ["2026-10-01"],
+        "currency": [bank_currency],
+        "amount": [bank_amount],
+        "status": ["SETTLED"],
+    })
+
+    return reconcile_transactions(internal_df, bank_df)
+
+def test_floating_point_noise_is_not_a_mismatch():
+    reconciled = make_pair(0.1 + 0.2, 0.3)
+
+    assert len(find_amount_mismatches(reconciled)) == 0
+
+def test_amount_tolerance():
+    reconciled = make_pair(100.00, 100.01)
+
+    assert len(find_amount_mismatches(reconciled)) == 1
+    assert len(find_amount_mismatches(reconciled, tolerance=0.01)) == 0
+
+def test_amount_mismatch_reports_difference():
+    reconciled = make_pair(810.50, 800.50)
+
+    amount_mismatches = find_amount_mismatches(reconciled)
+
+    assert amount_mismatches.iloc[0]["difference"] == 10.0
+
 def test_invalid_amount_does_not_flag_other_rows():
     internal_df = pd.DataFrame({
         "transaction_id": ["TX001", "TX002", "TX003"],

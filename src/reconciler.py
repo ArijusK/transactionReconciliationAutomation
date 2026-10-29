@@ -1,5 +1,7 @@
 import pandas as pd
 
+AMOUNT_TOLERANCE = 0.00
+
 
 def split_unmatchable(internal_df, bank_df):
     duplicated_ids = set(
@@ -57,7 +59,7 @@ def find_missing_transactions(reconciled):
 
     return missing_from_bank, missing_from_internal
 
-def find_amount_mismatches(reconciled):
+def find_amount_mismatches(reconciled, tolerance=AMOUNT_TOLERANCE):
     both = reconciled[
        reconciled["_merge"] == "both"
     ].copy()
@@ -67,8 +69,10 @@ def find_amount_mismatches(reconciled):
 
     comparable = amount_internal.notna() & amount_bank.notna()
 
+    both["difference"] = (amount_internal - amount_bank).round(2)
+
     return both[
-        comparable & (amount_internal != amount_bank)
+        comparable & (both["difference"].abs() > tolerance)
     ]
 
 def find_status_mismatches(reconciled):
