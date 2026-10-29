@@ -1,5 +1,6 @@
 from pathlib import Path
 import logging
+import sys
 import pandas as pd
 
 from src.exchange_rates import (
@@ -228,11 +229,18 @@ def main():
     logging.info("Reconciliation report generated successfully")
 
 
-if __name__ == "__main__":
+def run():
     try:
         main()
 
     except Exception as error:
         logging.error(error)
+        return 1
+
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(run())
 
 
