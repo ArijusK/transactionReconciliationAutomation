@@ -19,6 +19,7 @@ from src.validator import (
 )
 from src.reconciler import (
     reconcile_transactions,
+    find_matched_transactions,
     find_missing_transactions,
     find_amount_mismatches,
     find_status_mismatches,
@@ -155,6 +156,8 @@ def main():
         bank_df
     )
 
+    matched_by_id = find_matched_transactions(reconciled)
+
     missing_from_bank, missing_from_internal = (
         find_missing_transactions(reconciled)
     )
@@ -164,6 +167,7 @@ def main():
     currency_mismatches = find_currency_mismatches(reconciled)
 
     results = {
+        "matched_by_id": matched_by_id,
         "missing_from_bank": missing_from_bank,
         "missing_from_internal": missing_from_internal,
         "amount_mismatches": amount_mismatches,

@@ -50,6 +50,11 @@ def reconcile_transactions(internal_df, bank_df):
         validate="one_to_one"
     )
 
+def find_matched_transactions(reconciled):
+    return reconciled[
+        reconciled["_merge"] == "both"
+    ]
+
 def find_missing_transactions(reconciled):
     missing_from_bank = reconciled[
         reconciled["_merge"] == "left_only"

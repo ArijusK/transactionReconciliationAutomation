@@ -48,3 +48,19 @@ def test_missing_sheets_only_show_the_side_with_the_transaction(report_path):
         "amount_bank",
         "status_bank",
     ]
+
+
+def test_matched_transactions_are_counted_and_listed(report_path):
+    summary = pd.read_excel(
+        report_path,
+        sheet_name="Summary"
+    ).set_index("Metric")["Count"]
+
+    matched = pd.read_excel(
+        report_path,
+        sheet_name="Matched By ID"
+    )
+
+    assert summary["Matched by ID"] == 5
+    assert len(matched) == 5
+    assert "_merge" not in matched.columns

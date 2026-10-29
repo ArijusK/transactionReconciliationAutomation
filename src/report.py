@@ -7,6 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 OUTPUT_DIR = BASE_DIR / "output"
 
 REPORT_SECTIONS = [
+    ("matched_by_id", "Matched by ID", "Matched By ID"),
     ("missing_from_bank", "Missing from bank", "Missing From Bank"),
     ("missing_from_internal", "Missing from internal", "Missing From Internal"),
     ("amount_mismatches", "Amount mismatches", "Amount Mismatches"),
@@ -42,6 +43,7 @@ BANK_COLUMNS = [
 ]
 
 SHEET_COLUMNS = {
+    "matched_by_id": INTERNAL_COLUMNS + BANK_COLUMNS[1:],
     "missing_from_bank": INTERNAL_COLUMNS,
     "missing_from_internal": BANK_COLUMNS,
     "amount_mismatches": [
